@@ -7,22 +7,22 @@
 schedule_test/celery_config.py
 ``` python
 class BaseConfig(object):
-broker_url = 'amqp://username:password@127.0.0.1:5672/' #使用rabbitmq作为消息代理
-result_backend = 'redis://:password@127.0.0.1/0' #任务结果存入redis
-task_serializer = 'msgpack' #任务序列化和反序列化使用msgpack方案
-result_serializer = 'json' #读取任务结果要求性能不高，使用可读性更好的JSON
-result_expires = 60*60*24 #任务任务过期时间
-accept_content = ['json','msgpack'] #指点接受的内容类型
-timezone = 'UTC' #设置时区
-enable_utc = True #开启utc
-imports = ['schedule.celery_tasks'] #导入任务模块
-task_track_started = True #任务跟踪
-beat_schedule = {
-'test':{
-'task':'schedule_test.celery_tasks.test_task_async',
-'schedule':timedelta(seconds=10),
-}
-}
+    broker_url = 'amqp://username:password@127.0.0.1:5672/' #使用rabbitmq作为消息代理
+    result_backend = 'redis://:password@127.0.0.1/0' #任务结果存入redis
+    task_serializer = 'msgpack' #任务序列化和反序列化使用msgpack方案
+    result_serializer = 'json' #读取任务结果要求性能不高，使用可读性更好的JSON
+    result_expires = 60*60*24 #任务任务过期时间
+    accept_content = ['json','msgpack'] #指点接受的内容类型
+    timezone = 'UTC' #设置时区
+    enable_utc = True #开启utc
+    imports = ['schedule.celery_tasks'] #导入任务模块
+    task_track_started = True #任务跟踪
+    beat_schedule = {
+        'test':{
+            'task':'schedule_test.celery_tasks.test_task_async',
+            'schedule':timedelta(seconds=10),
+        }
+    }
 
 # crontab() 每分钟执行一次
 # crontab(minute=0, hour=0) 每天凌晨十二点执行
@@ -31,11 +31,11 @@ beat_schedule = {
 # crontab(minute='*/10',hour='3,17,22', day_of_week='thu,fri') 每周三，五的三点，七点和二十二点没十分钟执行一次
 
 class DevConfig(BaseConfig):
-pass
+    pass
 class TestConfig(BaseConfig):
-pass
+    pass
 class ProductionConfig(BaseConfig):
-pass
+    pass
 
 config = DevConfig()
 ```
@@ -54,7 +54,7 @@ from schedule_test.celery_app import celery_app
 
 @celery_app.task
 def test_task_async():
-return 'result info.'
+    return 'result info.'
 ```
 
 ### 2) 指定任务队列
@@ -64,21 +64,21 @@ schedule_test/celery_config.py
 from kombu import Queue
 
 class BaseConfig(object):
-...
-task_queues = (
-Queue('default',exchange=Exchange('default'),routing_key='task.#'), # 路由键以“task.”开头的消息都进default队列
-Queue('web_tasks',exchange=Exchange('web_tasks'),routing_key='web.#'), # 路由键以“web.”开头的消息都进web_tasks队列
-Queue('beat_tasks',exchange=Exchange('beat_tasks'),routing_key='beat.#'), #路由键以“beat.”开头的消息都进beat_tasks队列
-)
-task_default_exchange = 'tasks' # 默认的交换机名字为tasks
-task_default_exchange_type = 'topic' # 默认的交换类型为topic
-task_default_routing_key = 'task.default' # 默认的路由键是task.default,这个路由键符合上面的default队列
-task_routes = {
-'schedule_test.celery_tasks.test_task_async':{ # test_task_async任务的消息指定进入beat_tasks队列
-'queue':'beat_tasks',
-'routing_key':'beat.test_task_async'
-}
-}
+    ...
+    task_queues = (
+    Queue('default',exchange=Exchange('default'),routing_key='task.#'), # 路由键以“task.”开头的消息都进default队列
+    Queue('web_tasks',exchange=Exchange('web_tasks'),routing_key='web.#'), # 路由键以“web.”开头的消息都进web_tasks队列
+    Queue('beat_tasks',exchange=Exchange('beat_tasks'),routing_key='beat.#'), #路由键以“beat.”开头的消息都进beat_tasks队列
+    )
+    task_default_exchange = 'tasks' # 默认的交换机名字为tasks
+    task_default_exchange_type = 'topic' # 默认的交换类型为topic
+    task_default_routing_key = 'task.default' # 默认的路由键是task.default,这个路由键符合上面的default队列
+    task_routes = {
+        'schedule_test.celery_tasks.test_task_async':{ # test_task_async任务的消息指定进入beat_tasks队列
+            'queue':'beat_tasks',
+            'routing_key':'beat.test_task_async'
+        }
+    }
 ```
 
 ### 3) Django与Celery的使用
@@ -88,9 +88,9 @@ task_routes = {
 schedule_test/celery_config.py
 ``` python
 class BaseConfig(object):
-# result_expires = 60*60*24 # 此项在使用django-celery-results作为backend时无效
-beat_scheduler = 'django_celery_beat.schedulers.DatabaseScheduler' # 指定django-celery-beat调度类
-result_backend = 'django_celery_results.backends.database:DatabaseBackend' # 指定任务结果使用django-celery-results保存
+    # result_expires = 60*60*24 # 此项在使用django-celery-results作为backend时无效
+    beat_scheduler = 'django_celery_beat.schedulers.DatabaseScheduler' # 指定django-celery-beat调度类
+    result_backend = 'django_celery_results.backends.database:DatabaseBackend' # 指定任务结果使用django-celery-results保存
 
 ```
 
@@ -110,6 +110,7 @@ project/__init__.py
 ``` python
 from __future__ import absolute_import, unicode_literals
 from schedule_test.celery_app import celery_app
+
 __all__ = ('celery_app',)
 ```
 
